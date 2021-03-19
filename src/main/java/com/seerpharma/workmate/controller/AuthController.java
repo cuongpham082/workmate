@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.seerpharma.workmate.model.Company;
+import com.seerpharma.workmate.repository.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,9 @@ public class AuthController {
 
 	@Autowired
 	RoleRepository roleRepository;
+
+	@Autowired
+	CompanyRepository companyRepository;
 
 	@Autowired
 	PasswordEncoder encoder;
@@ -91,11 +96,15 @@ public class AuthController {
 					.body(new MessageResponse(HttpStatus.BAD_REQUEST.value(), "Error: Email is already in use!"));
 		}
 
+		Company company = companyRepository.findByShortName(signUpRequest.getCompanyShortName())
+				.orElseThrow(() -> new RuntimeException("Error: Company does not exist"));
+
 		// Create new user's account
 		User user = new User(signUpRequest.getUsername(), 
 							 signUpRequest.getEmail(),
 							 encoder.encode(signUpRequest.getPassword()),
-							 System.currentTimeMillis());
+							 System.currentTimeMillis(),
+							 company);
 
 		Set<String> strRoles = signUpRequest.getRoles();
 		Set<Role> roles = new HashSet<>();

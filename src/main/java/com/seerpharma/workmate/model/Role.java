@@ -27,7 +27,6 @@ public class Role {
     private Long stamp = 0L;
 	
 	public Role() {
-
 	}
 
 	public Role(ERole name, Long stamp) {
