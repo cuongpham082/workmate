@@ -20,9 +20,8 @@ public class Role {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Enumerated(EnumType.STRING)
 	@Column(length = 20)
-	private ERole name;
+	private String name;
 
 	@Column(name = "stamp")
     @JsonIgnore
@@ -35,7 +34,7 @@ public class Role {
 	public Role() {
 	}
 
-	public Role(ERole name, Long stamp) {
+	public Role(String name, Long stamp) {
 		this.name = name;
 		this.stamp = stamp;
 	}
@@ -48,11 +47,11 @@ public class Role {
 		this.id = id;
 	}
 
-	public ERole getName() {
+	public String getName() {
 		return name;
 	}
 
-	public void setName(ERole name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 	

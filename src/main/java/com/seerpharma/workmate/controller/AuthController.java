@@ -1,14 +1,14 @@
 package com.seerpharma.workmate.controller;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import com.seerpharma.workmate.model.Account;
-import com.seerpharma.workmate.repository.CompanyRepository;
+import com.seerpharma.workmate.model.ERole;
+import com.seerpharma.workmate.repository.AccountRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.seerpharma.workmate.model.ERole;
 import com.seerpharma.workmate.model.Role;
 import com.seerpharma.workmate.model.User;
 import com.seerpharma.workmate.payload.request.LoginRequest;
@@ -40,6 +39,7 @@ import com.seerpharma.workmate.security.service.impl.UserDetailsImpl;
 @RestController
 @RequestMapping("/api/v1")
 public class AuthController {
+	private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 	@Autowired
 	AuthenticationManager authenticationManager;
 
@@ -50,7 +50,7 @@ public class AuthController {
 	RoleRepository roleRepository;
 
 	@Autowired
-	CompanyRepository companyRepository;
+	AccountRepository accountRepository;
 
 	@Autowired
 	PasswordEncoder encoder;
@@ -68,7 +68,7 @@ public class AuthController {
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 		String accessToken = jwtUtils.generateAccessToken(userDetails.getUsername());
 		String refreshToken = jwtUtils.generateRefreshToken(userDetails.getUsername());
-		
+
 		List<String> roles = userDetails.getAuthorities().stream()
 				.map(item -> item.getAuthority())
 				.collect(Collectors.toList());
@@ -84,7 +84,7 @@ public class AuthController {
 	}
 
 	@PostMapping("/signup")
-	//@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
 			return ResponseEntity
@@ -98,37 +98,35 @@ public class AuthController {
 					.body(new MessageResponse(HttpStatus.BAD_REQUEST.value(), "Error: Email is already in use!"));
 		}
 
-		Account company = companyRepository.findByShortName(signUpRequest.getCompanyShortName())
-				.orElseThrow(() -> new RuntimeException("Error: Company does not exist"));
-
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth == null) {
+			return ResponseEntity
+					.badRequest()
+					.body(new MessageResponse(HttpStatus.BAD_REQUEST.value(), "Error: Can not get current authentication."));
+		}
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		User currentUser = userRepository.findByUsername(userDetails.getUsername())
+				.orElseThrow(() -> new RuntimeException("Error: Logged user does not exist"));
 		// Create new user's account
-		User user = new User(signUpRequest.getUsername(), 
-							 signUpRequest.getEmail(),
-							 encoder.encode(signUpRequest.getPassword()),
-							 System.currentTimeMillis(),
-							 company);
+		User user = new User(signUpRequest.getUsername(),
+				signUpRequest.getEmail(),
+				encoder.encode(signUpRequest.getPassword()),
+				System.currentTimeMillis(),
+				currentUser.getAccount());
 
 		Set<String> strRoles = signUpRequest.getRoles();
 		Set<Role> roles = new HashSet<>();
 
-		if (strRoles == null) {
-			Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+		if (strRoles == null || strRoles.isEmpty()) {
+			Role userRole = roleRepository.findByName(ERole.ROLE_USER.name())
 					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 			roles.add(userRole);
 		} else {
-			strRoles.forEach(role -> {
-				switch (role) {
-				case "admin":
-					Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+			strRoles.forEach(feRole -> {
+					String beRole = "ROLE_" + feRole.toUpperCase();
+					Role role = roleRepository.findByName(beRole)
 							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-					roles.add(adminRole);
-
-					break;
-				default:
-					Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-					roles.add(userRole);
-				}
+					roles.add(role);
 			});
 		}
 

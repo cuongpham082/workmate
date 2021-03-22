@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.NonNullApi;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,8 +33,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             if (!isUriValid(request)) {
                 if (!checkAuthorization(request)) {
@@ -57,19 +59,16 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-
     private Boolean checkAuthorization(HttpServletRequest request) {
-        return request.getHeader(Constants.HEADER_AUTHORIZATION) != null ? true : false;
+        return request.getHeader(Constants.HEADER_AUTHORIZATION) != null;
     }
 
     private Boolean isUriValid(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         return requestURI.equals(Constants.LOGIN_URI)
-        		|| requestURI.equals(Constants.SIGNUP_URI)
                 || requestURI.equals(Constants.TOKEN_URI)
                 || requestURI.equals(Constants.ACTIVE_USER_URI)
-                || requestURI.contains(Constants.FORGOT_PASSWORD_URI)
-                ? true : false;
+                || requestURI.contains(Constants.FORGOT_PASSWORD_URI);
     }
 
     private String parseJwt(HttpServletRequest request) {

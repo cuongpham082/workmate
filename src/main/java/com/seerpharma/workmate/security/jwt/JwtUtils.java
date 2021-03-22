@@ -1,5 +1,6 @@
 package com.seerpharma.workmate.security.jwt;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import org.slf4j.Logger;
@@ -30,8 +31,9 @@ public class JwtUtils {
 	private int jwtRtExpirationMs;
 
 	public String generateAccessToken(String userName) {
+		Claims claims = Jwts.claims().setSubject(userName);
 		return Jwts.builder()
-				.setSubject((userName))
+				.setClaims(claims)
 				.setIssuedAt(new Date())
 				.setExpiration(new Date((new Date()).getTime() + jwtAtExpirationMs))
 				.signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -48,8 +50,9 @@ public class JwtUtils {
 	}
 
 	public String generateRefreshToken(String userName) {
+		Claims claims = Jwts.claims().setSubject(userName);
 		return Jwts.builder()
-				.setSubject((userName))
+				.setClaims(claims)
 				.setIssuedAt(new Date())
 				.setExpiration(new Date((new Date()).getTime() + jwtRtExpirationMs))
 				.signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -84,8 +87,7 @@ public class JwtUtils {
 
 	public Jws<Claims> getClaimsJwsViaJwtToken(String authToken) {
 		try {
-			Jws<Claims> claimsJws = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
-			return claimsJws;
+			return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
 		} catch (SignatureException e) {
 			logger.error("Invalid JWT signature: {}", e.getMessage());
 		} catch (MalformedJwtException e) {
