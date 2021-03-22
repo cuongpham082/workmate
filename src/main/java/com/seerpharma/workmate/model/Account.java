@@ -7,12 +7,12 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Entity
-@Table(	name = "company",
+@Table(	name = "account",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "name"),
                 @UniqueConstraint(columnNames = "short_name")
         })
-public class Company {
+public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,10 +33,10 @@ public class Company {
     @JsonIgnore
     private Long stamp = 0L;
 
-    public Company() {
+    public Account() {
     }
 
-    public Company(Long id, @NotBlank @Size(max = 200) String name, @NotBlank @Size(max = 3) String shortName, @Size(max = 200) String logo, Long stamp) {
+    public Account(Long id, @NotBlank @Size(max = 200) String name, @NotBlank @Size(max = 3) String shortName, @Size(max = 200) String logo, Long stamp) {
         this.id = id;
         this.name = name;
         this.shortName = shortName;

@@ -7,6 +7,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,6 +27,10 @@ public class Role {
 	@Column(name = "stamp")
     @JsonIgnore
     private Long stamp = 0L;
+	
+	@ManyToOne
+	@JoinColumn(name = "account_id")
+	private Account account;
 	
 	public Role() {
 	}

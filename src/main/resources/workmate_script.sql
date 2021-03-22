@@ -10,18 +10,18 @@ CREATE TABLE role
 INSERT INTO role (name, stamp) VALUES
 ('ROLE_ADMIN', 1), ('ROLE_MODERATOR', 1), ('ROLE_USER', 1);
 
-CREATE TABLE company
+CREATE TABLE account
 (
   id bigserial NOT NULL,
   logo character varying(200),
   name character varying(200),
   short_name character varying(3),
   stamp bigint,
-  CONSTRAINT company_pkey PRIMARY KEY (id),
+  CONSTRAINT account_pkey PRIMARY KEY (id),
   CONSTRAINT short_name_unique UNIQUE (short_name),
   CONSTRAINT name_unique UNIQUE (name)
 );
-INSERT INTO company (name, short_name, logo, stamp) VALUES
+INSERT INTO account (name, short_name, logo, stamp) VALUES
 ('Seer Pharma', 'SEE', '', 1);
 
 CREATE TABLE users

@@ -44,19 +44,19 @@ public class User {
 				inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Set<Role> roles = new HashSet<>();
 
-	@ManyToOne
-	@JoinColumn(name = "company_id")
-	private Company company;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "account_id")
+	private Account account;
 
 	public User() {
 	}
 
-	public User(String username, String email, String password, Long stamp, Company company) {
+	public User(String username, String email, String password, Long stamp, Account account) {
 		this.username = username;
 		this.email = email;
 		this.password = password;
 		this.stamp = stamp;
-		this.company = company;
+		this.account = account;
 	}
 
 	public Long getId() {
@@ -103,11 +103,11 @@ public class User {
 
     public void setStamp(Long stamp) { this.stamp = stamp; }
 
-	public Company getCompany() {
-		return company;
+	public Account getAccount() {
+		return account;
 	}
 
-	public void setCompany(Company company) {
-		this.company = company;
+	public void setAccount(Account account) {
+		this.account = account;
 	}
 }

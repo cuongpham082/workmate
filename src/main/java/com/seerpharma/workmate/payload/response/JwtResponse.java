@@ -14,9 +14,10 @@ public class JwtResponse {
 	private String username;
 	private String email;
 	private List<String> roles;
+	private Long accountId;
 
 	public JwtResponse(String accessToken, String refreshToken, int	accessExpire, int refreshExpire, Long id,
-			String username, String email, List<String> roles) {
+			String username, String email, List<String> roles, Long accountId) {
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;
 		this.accessExpire = accessExpire;
@@ -25,6 +26,7 @@ public class JwtResponse {
 		this.username = username;
 		this.email = email;
 		this.roles = roles;
+		this.accountId = accountId;
 	}
 
 	public String getAccessToken() {
@@ -61,6 +63,10 @@ public class JwtResponse {
 
 	public List<String> getRoles() {
 		return roles;
+	}
+
+	public Long getAccountId() {
+		return accountId;
 	}
 
 }

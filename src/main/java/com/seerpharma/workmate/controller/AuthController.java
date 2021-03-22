@@ -7,11 +7,12 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import com.seerpharma.workmate.model.Company;
+import com.seerpharma.workmate.model.Account;
 import com.seerpharma.workmate.repository.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -79,10 +80,11 @@ public class AuthController {
 												 userDetails.getId(), 
 												 userDetails.getUsername(), 
 												 userDetails.getEmail(), 
-												 roles));
+												 roles, userDetails.getAccountId()));
 	}
 
 	@PostMapping("/signup")
+	//@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
 			return ResponseEntity
@@ -96,7 +98,7 @@ public class AuthController {
 					.body(new MessageResponse(HttpStatus.BAD_REQUEST.value(), "Error: Email is already in use!"));
 		}
 
-		Company company = companyRepository.findByShortName(signUpRequest.getCompanyShortName())
+		Account company = companyRepository.findByShortName(signUpRequest.getCompanyShortName())
 				.orElseThrow(() -> new RuntimeException("Error: Company does not exist"));
 
 		// Create new user's account
@@ -120,12 +122,6 @@ public class AuthController {
 					Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
 							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 					roles.add(adminRole);
-
-					break;
-				case "mod":
-					Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
-							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-					roles.add(modRole);
 
 					break;
 				default:
